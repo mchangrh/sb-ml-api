@@ -1,0 +1,25 @@
+{
+  "name": "sb-ml-api",
+  "version": "1.0.0",
+  "description": "SponsorBlock ML API",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mchangrh/sb-ml-api.git"
+  },
+  "author": "Michael Chang <michael@mchang.name>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/mchangrh/sb-ml-api/issues"
+  },
+  "homepage": "https://github.com/mchangrh/sb-ml-api#readme",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "dotenv": "^16.0.0",
+    "fastify": "^3.27.1",
+    "mongodb": "^4.3.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
