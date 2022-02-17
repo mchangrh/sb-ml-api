@@ -46,7 +46,7 @@ fastify.all('/done', async (req, reply) => {
   const result = await coll.updateOne(
     { video_id: req.query.video_id },
     { $set: { type: "done" } },
-    { $unset: { missed: "" }}
+    { $unset: { "missed": "" }}
   );
   return reply.send(result);
 })
