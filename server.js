@@ -32,7 +32,7 @@ fastify.all('/get', async (req, reply) => {
     { $match: { type: "missed" }},
   ]);
   const results = await cursor.toArray();
-  if (results.length === 0) return res.code(404).send();
+  if (results.length === 0) return reply.code(404).send();
   reply.send(results[0]);
 });
 // done
