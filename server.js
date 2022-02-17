@@ -13,8 +13,8 @@ mongo.connect(
       console.error(err);
       return;
     };
-    let db = client.db("sb-ml");
-    coll = db.collection("suggestions");
+    let db = client.db("sb-slash");
+    coll = db.collection("sbml");
   }
 )
 // prehook
