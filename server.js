@@ -4,7 +4,15 @@ const fastify = Fastify({
   bodyLimit: 20971520 // 20MB
 });
 const mongo = require("mongodb").MongoClient;
-let coll;
+let sbml, batch;
+
+// taken from cfkv-bin
+const SYMBOLS = '23456789abcdefhjkprstxyzABCDEFGHJKMNPQRSTXYZ'
+const genID = (len = 5) => {
+  let result = ''
+  for (let i = 0; i < len; i++) result += SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
+  return result
+}
 
 // mongodb setup
 mongo.connect(
@@ -14,7 +22,8 @@ mongo.connect(
       return;
     };
     let db = client.db("sb-slash");
-    coll = db.collection("sbml");
+    sbml = db.collection("sbml");
+    batch = db.collection("batch");
   }
 )
 // prehook
@@ -28,12 +37,12 @@ fastify.addHook('preValidation', (req, reply, done) => {
 // get
 fastify.all('/get', async (req, reply) => {
   if (req.query.video_id) {
-    const result = await coll.findOne({
+    const result = await sbml.findOne({
       video_id: req.query.video_id
     });
     reply.send(result);
   }
-  const cursor = await coll.aggregate([
+  const cursor = await sbml.aggregate([
     { $match: { type: "missed" }},
     { $sample: { size: 1 }}
   ]);
@@ -43,7 +52,7 @@ fastify.all('/get', async (req, reply) => {
 });
 // done
 fastify.all('/done', async (req, reply) => {
-  const result = await coll.updateOne(
+  const result = await sbml.updateOne(
     { video_id: req.query.video_id },
     [{ $set: { type: "done" }},
       { $unset: "missed" }
@@ -53,7 +62,7 @@ fastify.all('/done', async (req, reply) => {
 })
 // reject
 fastify.all('/reject', async (req, reply) => {
-  const result = await coll.updateOne(
+  const result = await sbml.updateOne(
     { video_id: req.query.video_id },
     { $set: { type: "rejected" } }
   );
@@ -61,14 +70,15 @@ fastify.all('/reject', async (req, reply) => {
 })
 // loading
 fastify.all('/load', async (req, reply) => {
-  const bulk = coll.initializeUnorderedBulkOp()
+  const batchID = genID();
+  const bulk = sbml.initializeUnorderedBulkOp()
   const suggestArray = req.body.split('\n');
   // try parse json
   let jsonerror = 0;
   for (const suggest of suggestArray) {
     try {
       const result = JSON.parse(suggest);
-      bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect"});
+      bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
     } catch (err) {
       console.log(err.name);
       jsonerror++;
@@ -88,7 +98,12 @@ fastify.all('/load', async (req, reply) => {
       bulkResponse = { ok: false, code: err.code, jsonErrors: jsonerror };
     }
   }
-  reply.send({ ...bulkResponse, input: suggestArray.length });
+  const response = { batchID, ...bulkResponse, input: suggestArray.length };
+  await batch.insert({
+    time: new Date(),
+    ...response,
+  });
+  reply.send(response);
 })
 fastify.all("*", (req, reply) => {
   reply.status(404).send();
