@@ -27,6 +27,12 @@ fastify.addHook('preValidation', (req, reply, done) => {
 })
 // get
 fastify.all('/get', async (req, reply) => {
+  if (req.query.video_id) {
+    const result = await coll.findOne({
+      video_id: req.query.video_id
+    });
+    reply.send(result);
+  }
   const cursor = await coll.aggregate([
     { $sample: { size: 1 }},
     { $match: { type: "missed" }},
