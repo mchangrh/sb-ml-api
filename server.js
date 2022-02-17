@@ -75,8 +75,10 @@ fastify.all('/load', async (req, reply) => {
   const suggestArray = req.body.split('\n');
   // try parse json
   let jsonerror = 0;
+  let comment;
   for (const suggest of suggestArray) {
     try {
+      if (suggest[0] === "#") comment = suggest;
       const result = JSON.parse(suggest);
       bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
     } catch (err) {
@@ -101,6 +103,7 @@ fastify.all('/load', async (req, reply) => {
   const response = { batchID, ...bulkResponse, input: suggestArray.length };
   await batch.insert({
     time: new Date(),
+    comment,
     ...response,
   });
   reply.send(response);
