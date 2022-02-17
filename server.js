@@ -8,11 +8,7 @@ let coll;
 
 // mongodb setup
 mongo.connect(
-  process.env.MONGO_AUTH, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  },
-  (err, client) => {
+  process.env.MONGO_AUTH, (err, client) => {
     if (err) {
       console.error(err);
       return;
@@ -87,4 +83,4 @@ fastify.all("*", (req, reply) => {
   reply.status(404).send();
 })
 
-fastify.listen(3000);
+fastify.listen(process.env.PORT);
