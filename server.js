@@ -34,8 +34,8 @@ fastify.all('/get', async (req, reply) => {
     reply.send(result);
   }
   const cursor = await coll.aggregate([
-    { $sample: { size: 1 }},
     { $match: { type: "missed" }},
+    { $sample: { size: 1 }}
   ]);
   const results = await cursor.toArray();
   if (results.length === 0) return reply.code(404).send();
@@ -43,7 +43,11 @@ fastify.all('/get', async (req, reply) => {
 });
 // done
 fastify.all('/done', async (req, reply) => {
-  const result = await coll.deleteOne({ video_id: req.query.video_id });
+  const result = await coll.updateOne(
+    { video_id: req.query.video_id },
+    { $set: { type: "done" } },
+    { $unset: { missed: "" }}
+  );
   return reply.send(result);
 })
 // reject
