@@ -14,7 +14,6 @@
   },
   "homepage": "https://github.com/mchangrh/sb-ml-api#readme",
   "dependencies": {
-    "axios": "^0.26.0",
     "dotenv": "^16.0.0",
     "fastify": "^3.27.1",
     "mongodb": "^4.3.1"

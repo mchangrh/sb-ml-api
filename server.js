@@ -1,9 +1,10 @@
 require('dotenv').config();
 const Fastify = require('fastify');
-const fastify = Fastify();
-const axios = require("axios");
+const fastify = Fastify({
+  bodyLimit: 20971520 // 20MB
+});
 const mongo = require("mongodb").MongoClient;
-let db, coll;
+let coll;
 
 // mongodb setup
 mongo.connect(
@@ -16,7 +17,7 @@ mongo.connect(
       console.error(err);
       return;
     };
-    db = client.db("sb-ml");
+    let db = client.db("sb-ml");
     coll = db.collection("suggestions");
   }
 )
@@ -53,11 +54,8 @@ fastify.all('/reject', async (req, reply) => {
 })
 // loading
 fastify.all('/load', async (req, reply) => {
-  const url = `https://bin.mchang.xyz/b/${req.query.bin_id}`
   const bulk = coll.initializeUnorderedBulkOp()
-  const suggestArray = await axios(url)
-    .then((result) => result.data)
-    .then((text) => text.split("\n"));
+  const suggestArray = req.body.split('\n');
   // try parse json
   let jsonerror = 0;
   for (const suggest of suggestArray) {
@@ -65,7 +63,7 @@ fastify.all('/load', async (req, reply) => {
       const result = JSON.parse(suggest);
       bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect"});
     } catch (err) {
-      console.log(err);
+      console.log(err.name);
       jsonerror++;
     }
   }
@@ -75,8 +73,13 @@ fastify.all('/load', async (req, reply) => {
     const rawResponse = await bulk.execute();
     bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted, jsonErrors: jsonerror };
   } catch (err) {
-    const rawResponse = err.result.result
-    bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors: jsonerror, writeErrors: rawResponse.writeErrors?.length };
+    console.log(err)
+    if (err?.result?.result) {
+      const rawResponse = err.result.result
+      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors: jsonerror, writeErrors: rawResponse.writeErrors?.length };
+    } else {
+      bulkResponse = { ok: false, code: err.code, jsonErrors: jsonerror };
+    }
   }
   reply.send({ ...bulkResponse, input: suggestArray.length });
 })
