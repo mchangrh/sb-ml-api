@@ -84,6 +84,17 @@
         input: number
       }
     }
+  },
+  "/info": {
+    description: "Get info about the database",
+    response: {
+      total: number
+      missed: number,
+      incorrect: number,
+      done: number,
+      rejected: number,
+      batches: number,
+    }
   }
 }
 ```

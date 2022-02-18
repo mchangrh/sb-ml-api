@@ -108,6 +108,18 @@ fastify.all('/load', async (req, reply) => {
   });
   reply.send(response);
 })
+// info
+fastify.all('/info', async (req, reply) => {
+  const result = {
+    total: await sbml.countDocuments(),
+    missed: await sbml.countDocuments({ type: "missed" }),
+    incorrect: await sbml.countDocuments({ type: "incorrect" }),
+    done: await sbml.countDocuments({ type: "done" }),
+    rejected: await sbml.countDocuments({ type: "rejected" }),
+    batches: await batch.countDocuments(),
+  }
+  return reply.send(result);
+})
 fastify.all("*", (req, reply) => {
   reply.status(404).send();
 })
