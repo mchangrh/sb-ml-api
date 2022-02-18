@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      @import url("style.css");
+    </style>
+  </head>
+  <body>
+    <h3>Segment Loading</h3>
+    <textarea id="upload_body"></textarea>
+    <button onclick="upload()">Upload</button>
+    Auth: <input id="auth">
+    <br>
+    <h3>Result</h3>
+    Result <a id="result">null</a>
+    <h3>CURL Loaders</h3>
+    <pre>curl --data-binary "@filename" -H "content-type: text/plain" https://sb-ml.mchang.xyz/load?auth=test</pre>
+    <a href="./sb-ml-loader.sh">.sh function</a>
+    <a href="./sb-ml-loader.bat">.bat loader</a>
+    <script>
+      async function upload() {
+        const auth = document.getElementById("auth").value;
+        const postData = document.getElementById("upload_body").value
+        await fetch(`https://sb-ml.mchang.xyz/load?auth=${auth}`, {
+          method: "POST",
+          body: postData,
+          headers: { "Content-Type": "text/plain" }
+        }).then(resp =>
+          resp.text()
+        ).then(text => {
+          document.getElementById("result").innerHTML = text
+        })
+      }
+    </script>
+  </body>
+</html>
