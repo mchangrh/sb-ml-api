@@ -35,6 +35,17 @@ fastify.addHook('preValidation', (req, reply, done) => {
   done();
 })
 // get
+fastify.all('/get/:category', async (req, reply) => {
+  const category = (req.params.category).toUpperCase()
+  const cursor = await sbml.aggregate([
+    { $match: { type: "missed" }},
+    { $match: { "missed.category": category }},
+    { $sample: { size: 1 }}
+  ]);
+  const results = await cursor.toArray();
+  if (results.length === 0) return reply.code(404).send();
+  reply.send(results[0]);
+});
 fastify.all('/get', async (req, reply) => {
   if (req.query.video_id) {
     const result = await sbml.findOne({
