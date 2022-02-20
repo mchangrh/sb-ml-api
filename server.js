@@ -74,7 +74,7 @@ fastify.all('/load', async (req, reply) => {
   const bulk = sbml.initializeUnorderedBulkOp()
   const suggestArray = req.body.split('\n');
   // try parse json
-  let jsonerror = 0;
+  let jsonErrors = 0;
   let comment;
   for (const suggest of suggestArray) {
     try {
@@ -83,21 +83,21 @@ fastify.all('/load', async (req, reply) => {
       bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
     } catch (err) {
       console.log(err.name);
-      jsonerror++;
+      jsonErrors++;
     }
   }
   // execute
   let bulkResponse;
   try {
     const rawResponse = await bulk.execute();
-    bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted, jsonErrors: jsonerror };
+    bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted, jsonErrors };
   } catch (err) {
     console.log(err)
     if (err?.result?.result) {
       const rawResponse = err.result.result
-      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors: jsonerror, writeErrors: rawResponse.writeErrors?.length };
+      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors, writeErrors: rawResponse.writeErrors?.length };
     } else {
-      bulkResponse = { ok: false, code: err.code, jsonErrors: jsonerror };
+      bulkResponse = { ok: false, code: err.code, jsonErrors };
     }
   }
   const response = { batchID, ...bulkResponse, input: suggestArray.length };
