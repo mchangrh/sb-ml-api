@@ -21,7 +21,7 @@ mongo.connect(
       console.error(err);
       return;
     };
-    let db = client.db("sb-slash");
+    const db = client.db("sb-slash");
     sbml = db.collection("sbml");
     batch = db.collection("batch");
   }
@@ -35,31 +35,32 @@ fastify.addHook('preValidation', (req, reply, done) => {
   done();
 })
 // get
-fastify.all('/get/:category', async (req, reply) => {
-  const category = (req.params.category).toUpperCase()
-  const cursor = await sbml.aggregate([
-    { $match: { type: "missed" }},
-    { $match: { "missed.category": category }},
-    { $sample: { size: 1 }}
-  ]);
-  const results = await cursor.toArray();
-  if (results.length === 0) return reply.code(404).send();
-  reply.send(results[0]);
-});
 fastify.all('/get', async (req, reply) => {
-  if (req.query.video_id) {
-    const result = await sbml.findOne({
-      video_id: req.query.video_id
-    });
-    reply.send(result);
-  }
-  const cursor = await sbml.aggregate([
+  const aggregate = [
     { $match: { type: "missed" }},
     { $sample: { size: 1 }}
-  ]);
-  const results = await cursor.toArray();
-  if (results.length === 0) return reply.code(404).send();
-  reply.send(results[0]);
+  ]
+  const { video_id, category, batch } = req.query;
+  // videoID
+  if (video_id) {
+    const result = await sbml.findOne({ video_id });
+    return reply.send(result);
+  }
+  // category
+  if (category) {
+    aggregate.push({ $match: {
+      "missed.category": (category).toUpperCase()
+    }});
+  }
+  if (batch) {
+    aggregate.push({ $match: { batch }});
+  }
+  // random
+  const cursor = await sbml.aggregate(aggregate);
+  const results = await cursor.toArray()
+  return (results.length === 0)
+    ? reply.code(404).send()
+    : reply.send(results[0])
 });
 // done
 fastify.all('/done', async (req, reply) => {
