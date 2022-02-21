@@ -53,7 +53,7 @@ fastify.all('/get', async (req, reply) => {
     }});
   }
   if (batch) {
-    aggregate.push({ $match: { batch }});
+    aggregate.push({ $match: { "batch": batch }});
   }
   // random
   const cursor = await sbml.aggregate(aggregate);
