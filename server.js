@@ -37,8 +37,7 @@ fastify.addHook('preValidation', (req, reply, done) => {
 // get
 fastify.all('/get', async (req, reply) => {
   const aggregate = [
-    { $match: { type: "missed" }},
-    { $sample: { size: 1 }}
+    { $match: { type: "missed" }}
   ]
   const { video_id, category, batch } = req.query;
   // videoID
@@ -55,6 +54,8 @@ fastify.all('/get', async (req, reply) => {
   if (batch) {
     aggregate.push({ $match: { "batch": batch }});
   }
+  // finally add select one
+  aggregate.push({ $sample: { size: 1 }});
   // random
   const cursor = await sbml.aggregate(aggregate);
   const results = await cursor.toArray()
