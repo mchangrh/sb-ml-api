@@ -23,7 +23,7 @@ mongo.connect(
     };
     const db = client.db("sb-slash");
     sbml = db.collection("sbml");
-    batch = db.collection("batch");
+    batch_coll = db.collection("batch");
   }
 )
 // prehook
@@ -113,7 +113,7 @@ fastify.all('/load', async (req, reply) => {
     }
   }
   const response = { batchID, ...bulkResponse, input: suggestArray.length };
-  await batch.insert({
+  await batch_coll.insert({
     time: new Date(),
     comment,
     ...response,
@@ -128,7 +128,7 @@ fastify.all('/info', async (req, reply) => {
     incorrect: await sbml.countDocuments({ type: "incorrect" }),
     done: await sbml.countDocuments({ type: "done" }),
     rejected: await sbml.countDocuments({ type: "rejected" }),
-    batches: await batch.countDocuments(),
+    batches: await batch_coll.countDocuments(),
   }
   return reply.send(result);
 })
