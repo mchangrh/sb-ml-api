@@ -4,7 +4,7 @@ const fastify = Fastify({
   bodyLimit: 20971520 // 20MB
 });
 const mongo = require("mongodb").MongoClient;
-let sbml, batch;
+let sbml, batch_coll;
 
 // taken from cfkv-bin
 const SYMBOLS = '23456789abcdefhjkprstxyzABCDEFGHJKMNPQRSTXYZ'
@@ -88,11 +88,16 @@ fastify.all('/load', async (req, reply) => {
   const suggestArray = req.body.split('\n');
   // try parse json
   let jsonErrors = 0;
+  let underThreshold = 0;
   let comment;
   for (const suggest of suggestArray) {
     try {
       if (suggest[0] === "#") comment = suggest;
       const result = JSON.parse(suggest);
+      const preFilter = result?.missed?.length
+      result.missed = result?.missed.filter(x => x.probability >= 0.8)
+      underThreshold += preFilter - result?.missed?.length;
+      if (!result?.missed?.length && !result?.incorrect?.length) continue
       bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
     } catch (err) {
       console.log(err.name);
@@ -108,9 +113,9 @@ fastify.all('/load', async (req, reply) => {
     console.log(err)
     if (err?.result?.result) {
       const rawResponse = err.result.result
-      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors, writeErrors: rawResponse.writeErrors?.length };
+      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors, underThreshold, writeErrors: rawResponse.writeErrors?.length };
     } else {
-      bulkResponse = { ok: false, code: err.code, jsonErrors };
+      bulkResponse = { ok: false, code: err.code, jsonErrors, underThreshold };
     }
   }
   const response = { batchID, ...bulkResponse, input: suggestArray.length };
@@ -138,3 +143,4 @@ fastify.all("*", (req, reply) => {
 })
 
 fastify.listen(process.env.PORT);
+console.log("server started on port " + process.env.PORT);
