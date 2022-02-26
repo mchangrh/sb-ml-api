@@ -85,7 +85,7 @@ fastify.all('/reject', async (req, reply) => {
 fastify.all('/load', async (req, reply) => {
   const batchID = genID();
   const bulk = sbml.initializeUnorderedBulkOp()
-  const suggestArray = req.body.split('\n');
+  const suggestArray = req.body.split(/\r?\n/);
   // try parse json
   let jsonErrors = 0;
   let underThreshold = 0;
@@ -94,7 +94,7 @@ fastify.all('/load', async (req, reply) => {
   for (const suggest of suggestArray) {
     try {
       if (suggest[0] === "#") comment = suggest;
-      const result = JSON.parse(suggest);
+      let result = JSON.parse(suggest);
       const preFilter = result?.missed?.length
       result.missed = result?.missed.filter(x => x.probability >= 0.8)
       underThreshold += preFilter - result?.missed?.length;
