@@ -90,6 +90,7 @@ fastify.all('/load', async (req, reply) => {
   let jsonErrors = 0;
   let underThreshold = 0;
   let comment;
+  const jsonLines = [];
   for (const suggest of suggestArray) {
     try {
       if (suggest[0] === "#") comment = suggest;
@@ -100,6 +101,7 @@ fastify.all('/load', async (req, reply) => {
       if (!result?.missed?.length && !result?.incorrect?.length) continue
       bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
     } catch (err) {
+      jsonLines.push(suggest);
       console.log(err.name);
       jsonErrors++;
     }
@@ -108,18 +110,18 @@ fastify.all('/load', async (req, reply) => {
   let bulkResponse;
   try {
     const rawResponse = await bulk.execute();
-    bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted, jsonErrors };
+    bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted };
   } catch (err) {
     console.log(err)
     if (err?.result?.result) {
       const rawResponse = err.result.result
-      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, jsonErrors, underThreshold, writeErrors: rawResponse.writeErrors?.length };
+      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, underThreshold, writeErrors: rawResponse.writeErrors?.length };
     } else {
-      bulkResponse = { ok: false, code: err.code, jsonErrors, underThreshold };
+      bulkResponse = { ok: false, code: err.code, underThreshold };
     }
   }
-  const response = { batchID, ...bulkResponse, input: suggestArray.length };
-  await batch_coll.insert({
+  const response = { batchID, ...bulkResponse, input: suggestArray.length, jsonErrors, jsonLines };
+  await batch_coll.insertOne({
     time: new Date(),
     comment,
     ...response,
