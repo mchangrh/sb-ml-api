@@ -16,12 +16,76 @@
         'enum': [
           'missed',
           'done',
-          'incorrect'
+          'incorrect',
+          'rejected'
         ]
+      },
+      incorrect: {
+        type: 'array',
+        uniqueItems: true,
+        items: {
+          bsonType: 'object',
+          properties: {
+            uuid: {
+              bsonType: 'string',
+              maxLength: 65
+            },
+            start: {
+              bsonType: [
+                'double',
+                'int'
+              ],
+              minimum: 0
+            },
+            end: {
+              bsonType: [
+                'double',
+                'int'
+              ]
+            },
+            votes: {
+              bsonType: 'int',
+              minimum: -2
+            },
+            locked: {
+              bsonType: 'bool'
+            },
+            views: {
+              bsonType: 'int',
+              minimum: 0
+            },
+            category: {
+              bsonType: 'string',
+              'enum': [
+                'selfpromo',
+                'sponsor',
+                'interaction'
+              ]
+            },
+            text: {
+              bsonType: 'string'
+            },
+            submission_time: {
+              bsonType: [
+                'double',
+                'int'
+              ]
+            },
+            reputation: {
+              bsonType: [
+                'int',
+                'double'
+              ],
+              maximum: 27
+            },
+            action: {
+              bsonType: 'string'
+            }
+          }
+        }
       },
       missed: {
         type: 'array',
-        minItems: 1,
         uniqueItems: true,
         items: {
           bsonType: 'object',
