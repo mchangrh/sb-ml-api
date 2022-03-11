@@ -35,7 +35,7 @@ fastify.addHook('preValidation', (req, reply, done) => {
   done();
 })
 // get
-fastify.all('/get', async (req, reply) => {
+fastify.all('/ml/get', async (req, reply) => {
   const aggregate = [
     { $match: { type: "missed" }}
   ]
@@ -64,7 +64,7 @@ fastify.all('/get', async (req, reply) => {
     : reply.send(results[0])
 });
 // done
-fastify.all('/done', async (req, reply) => {
+fastify.all('/ml/done', async (req, reply) => {
   const result = await sbml.updateOne(
     { video_id: req.query.video_id },
     [{ $set: { type: "done" }},
@@ -74,7 +74,7 @@ fastify.all('/done', async (req, reply) => {
   return reply.send(result);
 })
 // reject
-fastify.all('/reject', async (req, reply) => {
+fastify.all('/ml/reject', async (req, reply) => {
   const result = await sbml.updateOne(
     { video_id: req.query.video_id },
     { $set: { type: "rejected" } }
@@ -82,7 +82,7 @@ fastify.all('/reject', async (req, reply) => {
   return reply.send(result);
 })
 // loading
-fastify.all('/load', async (req, reply) => {
+fastify.all('/ml/load', async (req, reply) => {
   const batchID = genID();
   const bulk = sbml.initializeUnorderedBulkOp()
   const suggestArray = req.body.split(/\r?\n/);
@@ -127,7 +127,7 @@ fastify.all('/load', async (req, reply) => {
   reply.send(response);
 })
 // info
-fastify.all('/info', async (req, reply) => {
+fastify.all('/ml/info', async (req, reply) => {
   const result = {
     total: await sbml.countDocuments(),
     missed: await sbml.countDocuments({ type: "missed" }),
