@@ -9,7 +9,10 @@ async function routes(fastify, options) {
       return reply.send(result);
     }
     // random
-    const cursor = await classify.aggregate([{ $sample: { size: 1 }}]);
+    const cursor = await classify.aggregate([
+      { $match: { type: "classify" }},
+      { $sample: { size: 1 }}
+    ]);
     const results = await cursor.toArray()
     return (results.length === 0)
       ? reply.code(404).send()
