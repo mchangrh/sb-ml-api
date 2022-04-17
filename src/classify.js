@@ -50,7 +50,7 @@ async function routes(fastify, options) {
     return reply.send(result);
   })
   // loading
-  fastify.all('/classify/bulkload', async function (req, reply) {
+  fastify.all('/classify/load', async function (req, reply) {
     const classify = this.mongo.db.collection("classify");
     const bulk = classify.initializeUnorderedBulkOp()
     const suggestArray = req.body.split(/\r?\n/);
@@ -100,7 +100,7 @@ async function routes(fastify, options) {
     const classify = this.mongo.db.collection("classify");
     const result = {
       total: await classify.countDocuments(),
-      classify: await classify.countDocuments({ type: "load" }),
+      classify: await classify.countDocuments({ type: "classify" }),
       done: await classify.countDocuments({ type: "done" }),
       rejected: await classify.countDocuments({ type: "rejected" }),
     }
