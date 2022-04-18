@@ -30,12 +30,13 @@ async function routes(fastify, options) {
   // done
   fastify.all('/classify/vip', async function (req, reply) {
     const { discordID, uuid } = req.query;
+    const user = Number(discordID) || discordID
     const classify = this.mongo.db.collection("classify");
     const result = await classify.updateOne(        
       { uuid },
       [{ $set: {
         type: "done",
-        user: discordID
+        user
       }}]
     );
     return reply.send(result);
