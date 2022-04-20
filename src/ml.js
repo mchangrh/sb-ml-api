@@ -50,7 +50,7 @@ async function routes(fastify, options) {
     return reply.send(result);
   })
   // loading
-  fastify.all('/classify/load', async function (req, reply) {
+  fastify.all('/ml/load', async function (req, reply) {
     reply.code(410).send("use /load")
   })
   // info
