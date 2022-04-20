@@ -14,14 +14,14 @@
     <h3>Result</h3>
     Result <a id="result">null</a>
     <h3>CURL Loaders</h3>
-    <pre>curl --data-binary "@filename" -H "content-type: text/plain" https://ml.sb.mchang.xyz/ml/load?auth=test</pre>
+    <pre>curl --data-binary "@filename" -H "content-type: text/plain" https://ml.sb.mchang.xyz/load?auth=test</pre>
     <a href="./sb-ml-loader.sh">.sh function</a>
     <a href="./sb-ml-loader.bat">.bat loader</a>
     <script>
       async function upload() {
         const auth = document.getElementById("auth").value;
         const postData = document.getElementById("upload_body").value
-        await fetch(`https://ml.sb.mchang.xyz/ml/load?auth=${auth}`, {
+        await fetch(`https://ml.sb.mchang.xyz/load?auth=${auth}`, {
           method: "POST",
           body: postData,
           headers: { "Content-Type": "text/plain" }
