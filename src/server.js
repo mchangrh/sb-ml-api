@@ -4,6 +4,14 @@ const fastify = Fastify({
   bodyLimit: 20971520 // 20MB
 });
 
+// taken from cfkv-bin
+const SYMBOLS = '23456789abcdefhjkprstxyzABCDEFGHJKMNPQRSTXYZ'
+const genID = (len = 5) => {
+  let result = ''
+  for (let i = 0; i < len; i++) result += SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
+  return result
+}
+
 fastify.register(require('fastify-mongodb'), {
   // force to close the mongodb connection when app stopped
   forceClose: true,

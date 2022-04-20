@@ -1,10 +1,3 @@
-// taken from cfkv-bin
-const SYMBOLS = '23456789abcdefhjkprstxyzABCDEFGHJKMNPQRSTXYZ'
-const genID = (len = 5) => {
-  let result = ''
-  for (let i = 0; i < len; i++) result += SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
-  return result
-}
 async function routes(fastify, options) {
   // get
   fastify.all('/ml/get', async function (req, reply) {
