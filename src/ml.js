@@ -57,51 +57,8 @@ async function routes(fastify, options) {
     return reply.send(result);
   })
   // loading
-  fastify.all('/ml/load', async function (req, reply) {
-    const batchID = genID();
-    const sbml = this.mongo.db.collection("sbml");
-    const batch_coll = this.mongo.db.collection("batch")
-    const bulk = sbml.initializeUnorderedBulkOp()
-    const suggestArray = req.body.split(/\r?\n/);
-    // try parse json
-    let jsonErrors = 0;
-    let underThreshold = 0;
-    let comment;
-    for (const suggest of suggestArray) {
-      try {
-        if (suggest[0] === "#") comment = suggest;
-        let result = JSON.parse(suggest);
-        const preFilter = result?.missed?.length
-        result.missed = result?.missed.filter(x => x.probability >= 0.8)
-        underThreshold += preFilter - result?.missed?.length;
-        if (!result?.missed?.length && !result?.incorrect?.length) continue
-        bulk.insert({...result, type: result?.missed?.length ? "missed" : "incorrect", batch: batchID});
-      } catch (err) {
-        if (err.name === "SyntaxError") jsonErrors++;
-        else console.log(err)
-      }
-    }
-    // execute
-    let bulkResponse;
-    try {
-      const rawResponse = await bulk.execute();
-      bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted };
-    } catch (err) {
-      console.log(err)
-      if (err?.result?.result) {
-        const rawResponse = err.result.result
-        bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, underThreshold, writeErrors: rawResponse.writeErrors?.length };
-      } else {
-        bulkResponse = { ok: false, code: err.code, underThreshold };
-      }
-    }
-    const response = { batchID, ...bulkResponse, input: suggestArray.length, jsonErrors };
-    await batch_coll.insertOne({
-      time: new Date(),
-      comment,
-      ...response,
-    });
-    reply.send(response);
+  fastify.all('/classify/load', async function (req, reply) {
+    reply.code(410).send("use /load")
   })
   // info
   fastify.all('/ml/info', async function (req, reply) {
@@ -110,7 +67,6 @@ async function routes(fastify, options) {
     const result = {
       total: await sbml.countDocuments(),
       missed: await sbml.countDocuments({ type: "missed" }),
-      incorrect: await sbml.countDocuments({ type: "incorrect" }),
       done: await sbml.countDocuments({ type: "done" }),
       rejected: await sbml.countDocuments({ type: "rejected" }),
       batches: await batch_coll.countDocuments(),

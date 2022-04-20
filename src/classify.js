@@ -52,35 +52,7 @@ async function routes(fastify, options) {
   })
   // loading
   fastify.all('/classify/load', async function (req, reply) {
-    const classify = this.mongo.db.collection("classify");
-    const bulk = classify.initializeUnorderedBulkOp()
-    const suggestArray = req.body.split(/\r?\n/);
-    // try parse json
-    let jsonErrors = 0;
-    for (const suggest of suggestArray) {
-      try {
-        const result = JSON.parse(suggest);
-        bulk.insert({...result, type: "classify" });
-      } catch (err) {
-        if (err.name === "SyntaxError") jsonErrors++;
-      }
-    }
-    // execute
-    let bulkResponse;
-    try {
-      const rawResponse = await bulk.execute();
-      bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted };
-    } catch (err) {
-      console.log(err)
-      if (err?.result?.result) {
-        const rawResponse = err.result.result
-        bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, writeErrors: rawResponse.writeErrors?.length };
-      } else {
-        bulkResponse = { ok: false, code: err.code };
-      }
-    }
-    const response = { ...bulkResponse, input: suggestArray.length, jsonErrors };
-    reply.send(response);
+    reply.code(410).send("use /load")
   })
   // loading
   fastify.all('/classify/append', async function (req, reply) {
