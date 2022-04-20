@@ -81,20 +81,32 @@ fastify.all('/load', async function (req, reply) {
     }
   }
   // execute
-  let bulkResponse;
+  let sbml_bulk_response, classify_bulk_response;
   try {
-    const rawResponse = await bulk.execute();
-    bulkResponse = { ok: rawResponse.ok, inserted: rawResponse.nInserted };
+    const sbml_raw = await sbml_bulk.execute();
+    sbml_bulk_response = { ok: sbml_raw.ok, inserted: sbml_raw.nInserted };
   } catch (err) {
     console.log(err)
     if (err?.result?.result) {
-      const rawResponse = err.result.result
-      bulkResponse = { ok: rawResponse.ok, code: err.code, inserted: rawResponse.nInserted, underThreshold, writeErrors: rawResponse.writeErrors?.length };
+      const sbml_raw = err.result.result
+      sbml_bulk_response = { ok: sbml_raw.ok, code: err.code, inserted: sbml_raw.nInserted, underThreshold, writeErrors: sbml_raw.writeErrors?.length };
     } else {
-      bulkResponse = { ok: false, code: err.code, underThreshold };
+      sbml_bulk_response = { ok: false, code: err.code, underThreshold };
     }
   }
-  const response = { batchID: batch, ...bulkResponse, input: suggestArray.length, jsonErrors };
+  try {
+    const classify_raw = await classify_bulk.execute();
+    classify_bulk_response = { ok: classify_raw.ok, inserted: classify_raw.nInserted };
+  } catch (err) {
+    console.log(err)
+    if (err?.result?.result) {
+      const classify_raw = err.result.result
+      classify_bulk_response = { ok: classify_raw.ok, code: err.code, inserted: classify_raw.nInserted, writeErrors: classify_raw.writeErrors?.length };
+    } else {
+      classify_bulk_response = { ok: false, code: err.code };
+    }
+  }
+  const response = { batchID: batch, sbml: sbml_bulk_response, classify: classify_bulk_response, input: suggestArray.length, jsonErrors };
   await batch_coll.insertOne({
     time: new Date(),
     comment,
