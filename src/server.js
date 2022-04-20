@@ -65,7 +65,7 @@ fastify.all('/load', async function (req, reply) {
         underThreshold += preFilter - missedEntry.missed?.length;
         sbml_bulk.insert(missedEntry);
       } else if (result?.incorrect) {
-        for (const entry in result.incorrect) {
+        for (const entry of result.incorrect) {
           const incorrectEntry = {
             video_id,
             type: "classify",
