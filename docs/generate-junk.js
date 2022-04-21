@@ -10,7 +10,13 @@ const load = async (url) => {
         "start": 0,
         "end": 0,
         "category": "test",
-        "probability": 0,
+        "probability": 1,
+        "probabilities": {
+          "NONE": 0.5,
+          "SPONSOR": 0.1,
+          "SELFPROMO": 0.5,
+          "INTERACTION": 0.4
+        },
         "text": null
       }],
       type: "test"

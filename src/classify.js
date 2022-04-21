@@ -1,18 +1,21 @@
 async function routes(fastify, options) {
   // get
   fastify.all('/classify/get', async function (req, reply) {
-    const { uuid } = req.query;
+    const { uuid, batch } = req.query;
     const classify = this.mongo.db.collection("classify");
+    const aggregate = [{ $match: { type: "classify" }}]
     // videoID
     if (uuid) {
       const result = await classify.findOne({ uuid });
       return reply.send(result);
     }
+    if (batch) {
+      aggregate.push({ $match: { "batch": batch }});
+    }
+    // finally add select one
+    aggregate.push({ $sample: { size: 1 }});
     // random
-    const cursor = await classify.aggregate([
-      { $match: { type: "classify" }},
-      { $sample: { size: 1 }}
-    ]);
+    const cursor = await classify.aggregate(aggregate);
     const results = await cursor.toArray()
     return (results.length === 0)
       ? reply.code(404).send()
