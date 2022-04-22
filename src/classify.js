@@ -1,7 +1,7 @@
 async function routes(fastify, options) {
   // get
   fastify.all('/classify/get', async function (req, reply) {
-    const { uuid, batch } = req.query;
+    const { uuid, batch, from, to } = req.query;
     const classify = this.mongo.db.collection("classify");
     const aggregate = [{ $match: { type: "classify" }}]
     // videoID
@@ -11,6 +11,12 @@ async function routes(fastify, options) {
     }
     if (batch) {
       aggregate.push({ $match: { "batch": batch }});
+    }
+    if (from) {
+      aggregate.push({ $match: { "category": from }});
+    }
+    if (to) {
+      aggregate.push({ $match: { "predicted": to }});
     }
     // finally add select one
     aggregate.push({ $sample: { size: 1 }});
