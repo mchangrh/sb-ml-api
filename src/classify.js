@@ -24,7 +24,7 @@ async function routes(fastify, options) {
   // done
   fastify.all('/classify/done', async function (req, reply) {
     const classify = this.mongo.db.collection("classify");
-    const result = await classify.updateOne(        
+    const result = await classify.updateOne(
       { uuid: req.query.uuid },
       [{ $set: { type: "done" }}]
     );
@@ -35,7 +35,7 @@ async function routes(fastify, options) {
     const { discordID, uuid } = req.query;
     const user = Number(discordID) || discordID
     const classify = this.mongo.db.collection("classify");
-    const result = await classify.updateOne(        
+    const result = await classify.updateOne(
       { uuid },
       [{ $set: {
         type: "done",
@@ -67,8 +67,7 @@ async function routes(fastify, options) {
       const mongoResult = sbml.insertOne({...result, type: "classify" });
       reply.send(mongoResult);
     } catch (err) {
-      if (err.name === "SyntaxError") jsonErrors++;
-      else console.log(err)
+      console.log(err)
     }
   })
   // info
@@ -80,6 +79,15 @@ async function routes(fastify, options) {
       done: await classify.countDocuments({ type: "done" }),
       rejected: await classify.countDocuments({ type: "rejected" }),
     }
+    return reply.send(result);
+  })
+  // ignore
+  fastify.all('/classify/ignore', async function (req, reply) {
+    const classify = this.mongo.db.collection("classify");
+    const result = await classify.updateOne(
+      { uuid: req.query.uuid },
+      { $set: { type: "ignored" } }
+    );
     return reply.send(result);
   })
 }
