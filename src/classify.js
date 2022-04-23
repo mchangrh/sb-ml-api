@@ -1,9 +1,11 @@
 async function routes(fastify, options) {
   // get
   fastify.all('/classify/get', async function (req, reply) {
-    const { uuid, batch, from, to } = req.query;
+    const { uuid, batch, from, to, search } = req.query;
     const classify = this.mongo.db.collection("classify");
-    const aggregate = [{ $match: { type: "classify" }}]
+    const aggregate = search
+      ? [{ $match: { $text: { $search: search }}}]
+      : [{ $match: { type: "classify" }}]
     // videoID
     if (uuid) {
       const result = await classify.findOne({ uuid });
