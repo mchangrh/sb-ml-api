@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Fastify = require('fastify');
 const fastify = Fastify({
-  bodyLimit: 20971520 // 20MB
+  bodyLimit: 41943040 // 40MB
 });
 
 // taken from cfkv-bin
