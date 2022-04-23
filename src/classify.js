@@ -1,11 +1,16 @@
 async function routes(fastify, options) {
   // get
   fastify.all('/classify/get', async function (req, reply) {
-    const { uuid, batch, from, to, search } = req.query;
+    const { uuid, batch, from, to, search, flagged } = req.query;
     const classify = this.mongo.db.collection("classify");
     const aggregate = search
       ? [{ $match: { $text: { $search: search }}}]
-      : [{ $match: { type: "classify" }}]
+      : []
+    if (flagged) {
+      aggregate.push({ $match: { type: "flagged" }})
+    } else {
+      aggregate.push({ $match: { type: "classify" }})
+    }
     // videoID
     if (uuid) {
       const result = await classify.findOne({ uuid });
@@ -58,6 +63,15 @@ async function routes(fastify, options) {
     const result = await classify.updateOne(
       { uuid: req.query.uuid },
       { $set: { type: "rejected" } }
+    );
+    return reply.send(result);
+  })
+  // flag
+  fastify.all('/classify/flag', async function (req, reply) {
+    const classify = this.mongo.db.collection("classify");
+    const result = await classify.updateOne(
+      { uuid: req.query.uuid },
+      { $set: { type: "flagged" } }
     );
     return reply.send(result);
   })
