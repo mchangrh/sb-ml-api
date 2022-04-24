@@ -100,6 +100,7 @@ async function routes(fastify, options) {
       classify: await classify.countDocuments({ type: "classify" }),
       done: await classify.countDocuments({ type: "done" }),
       rejected: await classify.countDocuments({ type: "rejected" }),
+      flagged: await classify.countDocuments({ type: "flagged" }),
     }
     return reply.send(result);
   })
