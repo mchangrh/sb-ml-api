@@ -9,7 +9,9 @@ async function routes(fastify, options) {
     // videoID
     if (video_id) {
       const result = await sbml.findOne({ video_id });
-      return reply.send(result);
+      return (result == null)
+          ? reply.code(404).send()
+          : reply.send(result);
     }
     // category
     if (category) {

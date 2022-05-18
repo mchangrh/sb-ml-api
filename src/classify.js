@@ -14,7 +14,9 @@ async function routes(fastify, options) {
     // videoID
     if (uuid) {
       const result = await classify.findOne({ uuid });
-      return reply.send(result);
+      return (result == null)
+        ? reply.code(404).send()
+        : reply.send(result);
     }
     if (batch) {
       aggregate.push({ $match: { "batch": batch }});
