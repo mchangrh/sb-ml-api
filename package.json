@@ -15,7 +15,7 @@
   "homepage": "https://github.com/mchangrh/sb-ml-api#readme",
   "dependencies": {
     "dotenv": "^16.0.0",
-    "fastify": "^3.28.0",
+    "fastify": "^3.29.4",
     "fastify-mongodb": "^4.1.1"
   },
   "scripts": {
